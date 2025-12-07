@@ -61,11 +61,8 @@ The script performs the following actions:
 <!-- end list -->
 
 ```bash
-# Make the setup script executable
-chmod +x ~/bin/setup_rpi_env.sh
-
 # Run the idempotent setup script (this will take several minutes)
-setup_rpi_env.sh
+bash ~/src/pi500-dotfiles/bin/setup_rpi_env.sh
 ```
 
 -----
