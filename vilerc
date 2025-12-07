@@ -1,0 +1,52 @@
+1 new-process-group
+abbreviate #d #define
+abbreviate #i #include
+abbreviate teh the
+abbreviate UNIX UNIX&#153;
+map!  
+map [11~ #1
+map [12~ #2
+set autoindent
+set autosave
+set autowrite
+set c-shiftwidth=2
+set c-suffixes=\\.\\(\\([Cchis]\\)\\|CC\\|cpp\\|pl\\|pp\\|pm\\|plx\\|cxx\\|hxx\\|scm\\)$
+set check-modtime
+set cmode
+set directory=/usr/tmp
+set history
+set noautobuffer
+set nohorizscroll
+set nomultibeep
+set notabinsert
+set nowarn-rename
+set nowarn-reread
+set nowarn-unread
+set popup-choices=immediate
+set resolve-links
+set ruler
+set shiftwidth=2
+set showmatch
+set timeoutlen=100
+set visual-matches bold
+set wrapmargin=10
+set noxterm-mouse
+set-terminal word-kill ^W
+set-unix-mode
+store-procedure dos2unix
+   write-message &cat $cbufname " converted from DOS to UNIX line endings."
+   set-dos-mode
+   set-unix-mode
+~endm
+1 store-macro
+   run dos2unix
+~endm
+store-procedure unix2dos
+   write-message &cat $cbufname " converted from UNIX to DOS line endings."
+   set-unix-mode
+   set-dos-mode
+~endm
+2 store-macro
+   run unix2dos
+~endm
+set read-hook dos2unix
