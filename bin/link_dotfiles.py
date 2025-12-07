@@ -7,6 +7,7 @@ DOTFILES_REPO = Path.home() / "src" / "pi500-dotfiles"
 
 # Dictionary mapping: {Repo_Path_Fragment: Destination_Path}
 FILES_TO_LINK = {
+    "bashrc": Path.home() / ".bashrc",
     "bash_aliases": Path.home() / ".bash_aliases",
     "config/labwc/rc.xml": Path.home() / ".config" / "labwc" / "rc.xml",
     "gitconfig": Path.home() / ".gitconfig",
