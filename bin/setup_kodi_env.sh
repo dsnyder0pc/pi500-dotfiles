@@ -39,7 +39,7 @@ fi
 # b) Update and Install the Latest Version
 sudo apt update
 echo "Installing latest version: $KODI_PACKAGE."
-sudo apt install -y "$KODI_PACKAGE" "$KODI_PACKAGE-inputstream-adaptive"
+sudo apt install -y "$KODI_PACKAGE"
 
 # --- 2. User Permission Setup ---
 echo "[2/4] Setting user permissions for hardware access (Idempotent)..."
