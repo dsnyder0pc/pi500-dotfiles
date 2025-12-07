@@ -6,7 +6,7 @@
 get_latest_python_version() {
   # Filters for official 3.x.x releases and takes the last one (the newest)
   local latest_version
-  
+
   # Check if pyenv is available in the current PATH
   if ! command -v pyenv &>/dev/null; then
     echo "Error: pyenv command not found. Cannot determine latest version." >&2
@@ -17,7 +17,7 @@ get_latest_python_version() {
   latest_version=$(pyenv install --list 2>/dev/null | \
                    grep -E '^[[:space:]]*3\.[0-9]+\.[0-9]+[[:space:]]*$' | \
                    tail -n 1 | tr -d '[:space:]')
-  
+
   echo "$latest_version"
 }
 
@@ -38,7 +38,8 @@ ALE_REPO="https://github.com/dense-analysis/ale.git"
 APT_DEPS=(
   git build-essential autoconf automake libtool zlib1g-dev libbz2-dev liblzma-dev libexpat1-dev libffi-dev \
   libssl-dev libncurses5-dev libncursesw5-dev libreadline-dev uuid-dev libdb-dev libgdbm-dev libsqlite3-dev \
-  vim shellcheck tmux mosh tk tk-dev
+  vim shellcheck tmux mosh tk tk-dev \
+  fonts-noto-color-emoji
 )
 
 # --- Utility Functions ---
