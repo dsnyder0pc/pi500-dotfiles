@@ -22,7 +22,8 @@ sudo apt update
 sudo apt install -y git
 
 # Clone the repository
-git clone [YOUR_REPO_URL] ~/src/pi500-dotfiles
+mkdir -pv ~/src
+git clone https://github.com/dsnyder0pc/pi500-dotfiles.git ~/src/pi500-dotfiles
 
 # Change into the directory for the next step
 cd ~/src/pi500-dotfiles
