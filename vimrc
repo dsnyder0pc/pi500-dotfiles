@@ -4,6 +4,7 @@ set tabstop=2
 set expandtab
 set nocp
 set ruler
+syntax on
 
 " Show trailing whitepace and spaces before a tab:
 :highlight ExtraWhitespace ctermbg=red guibg=red
@@ -13,7 +14,8 @@ augroup python
   autocmd!
 
   autocmd FileType python set cinwords=if,elif,else,for,while,try,except,finally,def,class
-  autocmd FileType python set tabstop=8 shiftwidth=2 smarttab expandtab softtabstop=2 autoindent nosmartindent
+  " HARMONIZE PYTHON INDENTATION: Use 2 spaces for all
+  autocmd FileType python set tabstop=2 shiftwidth=2 smarttab expandtab softtabstop=2 autoindent
 
   let python_space_errors = 1
   setlocal nospell
