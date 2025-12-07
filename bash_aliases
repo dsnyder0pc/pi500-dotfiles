@@ -1,3 +1,3 @@
-# Linux version of macOS pbcopy and pbpaste using xsel
-alias pbcopy='xsel --clipboard --input'
-alias pbpaste='xsel --clipboard --output'
+# Linux version of macOS pbcopy and pbpaste using wl-clipboard (for Wayland compatibility)
+alias pbcopy='wl-copy'
+alias pbpaste='wl-paste'

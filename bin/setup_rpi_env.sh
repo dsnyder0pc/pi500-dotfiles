@@ -39,7 +39,7 @@ APT_DEPS=(
   git build-essential autoconf automake libtool zlib1g-dev libbz2-dev liblzma-dev libexpat1-dev libffi-dev \
   libssl-dev libncurses5-dev libncursesw5-dev libreadline-dev uuid-dev libdb-dev libgdbm-dev libsqlite3-dev \
   vim shellcheck tmux mosh tk tk-dev \
-  fonts-noto-color-emoji slurp \
+  fonts-noto-color-emoji slurp wl-clipboard \
   jq yq
 )
 
