@@ -115,6 +115,11 @@
          <command>gui-pkinst orca reboot</command>
       </action>
     </keybind>
+    <keybind key="W-Print">
+      <action name="Execute">
+        <command>bash -c 'grim -g "$(slurp)" ~/Pictures/screenshot_$(date +%s).png'</command>
+      </action>
+    </keybind>
     <keybind key="C-A-Delete">
       <action name="Execute">
          <command>pishutdown</command>
