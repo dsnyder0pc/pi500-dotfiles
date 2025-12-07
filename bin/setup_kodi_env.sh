@@ -17,6 +17,7 @@ echo "[1/4] Detecting latest major Kodi version available..."
 
 # Find the latest kodiXX-bin package, sort numerically, and take the last one.
 # Example output: kodi21-bin
+sudo apt update
 LATEST_KODI_BIN=$(apt-cache search kodi | awk '/^kodi[0-9][0-9]*-bin/ {print $1}' | sort -rV | head -n 1)
 
 if [ -z "$LATEST_KODI_BIN" ]; then
@@ -37,9 +38,8 @@ if dpkg -l | grep -q "^ii.*kodi " && ! dpkg -l | grep -q "kodi$KODI_VERSION_NUMB
 fi
 
 # b) Update and Install the Latest Version
-sudo apt update
 echo "Installing latest version: $KODI_PACKAGE."
-sudo apt install -y "$KODI_PACKAGE"
+sudo apt install --upgrade -y "$KODI_PACKAGE"
 
 # --- 2. User Permission Setup ---
 echo "[2/4] Setting user permissions for hardware access (Idempotent)..."
