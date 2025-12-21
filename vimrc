@@ -20,3 +20,13 @@ augroup python
   let python_space_errors = 1
   setlocal nospell
 augroup END
+
+" --- ALE Settings ---
+" This tells ALE to use the pylint installed by your setup script
+let g:ale_linters = {'python': ['pylint']}
+" This ensures ALE doesn't freeze your UI while checking code
+let g:ale_async = 1
+" Show errors in the 'gutter' (the left margin)
+let g:ale_sign_column_always = 1
+let g:ale_sign_error = '>>'
+let g:ale_sign_warning = '--'

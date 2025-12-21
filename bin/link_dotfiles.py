@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+Symlink dot files to a clone of this repo. The location is defined
+in the "Configuration" section below.
+"""
 import os
 from pathlib import Path
 
@@ -11,6 +15,7 @@ FILES_TO_LINK = {
     "bash_aliases": Path.home() / ".bash_aliases",
     "config/labwc/rc.xml": Path.home() / ".config" / "labwc" / "rc.xml",
     "gitconfig": Path.home() / ".gitconfig",
+    "pylintrc": Path.home() / ".pylintrc",
     "tmux.conf": Path.home() / ".tmux.conf",
     "vilerc": Path.home() / ".vilerc",
     "vimrc": Path.home() / ".vimrc",
@@ -38,8 +43,8 @@ def link_dotfiles():
         if not dest_dir.is_dir():
             try:
                 # Create parent directories if they don't exist
-                dest_dir.mkdir(parents=True, exist_ok=True) 
-                print(f"Directory created, ", end="")
+                dest_dir.mkdir(parents=True, exist_ok=True)
+                print("Directory created, ", end="")
             except OSError as e:
                 print(f"FAIL (Could not create directory: {dest_dir} - {e})")
                 continue
@@ -53,7 +58,7 @@ def link_dotfiles():
             else:
                 try:
                     os.remove(dest_path)
-                    print(f"Existing removed, ", end="")
+                    print("Existing removed, ", end="")
                 except OSError as e:
                     print(f"FAIL (Could not remove existing file: {e})")
                     continue
