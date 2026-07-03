@@ -1,7 +1,7 @@
 #!/bin/bash
 # ----------------------------------------------------------------------------
 # Script: setup_kodi_env.sh
-# Description: Configures Raspberry Pi OS (Bookworm) for optimal Kodi playback.
+# Description: Configures Raspberry Pi OS for optimal Kodi playback.
 # Dynamically installs the latest major Kodi version available (kodi21, kodi22, etc.).
 # --- Auto-detection of Headless / Desktop Environment ---
 # A system is considered headless if it lacks a Wayland compositor or X server, and does not boot to a graphical target by default.
