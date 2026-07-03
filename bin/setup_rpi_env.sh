@@ -152,16 +152,33 @@ fi
 
 echo "4. Installing Python $PYTHON_VERSION via pyenv..."
 
-if pyenv versions | grep -q "$PYTHON_VERSION"; then
+if pyenv versions --bare | grep -q "^${PYTHON_VERSION}$"; then
   echo "   Python $PYTHON_VERSION is already installed."
 else
+  # Get total memory in MB
+  TOTAL_MEM=$(awk '/^MemTotal:/ {print int($2/1024)}' /proc/meminfo)
+
+  if [ "$TOTAL_MEM" -lt 1900 ]; then
+    echo "   Physical RAM is ${TOTAL_MEM}MB. Limiting compilation to 1 core and using local scratch temp directory to prevent lockups."
+    export MAKE_OPTS="-j1"
+    export MAKEFLAGS="-j1"
+    mkdir -p "$HOME/pyenv_build_scratch"
+    export TMPDIR="$HOME/pyenv_build_scratch"
+  else
+    echo "   Physical RAM is ${TOTAL_MEM}MB. Proceeding with parallel build."
+  fi
+
   echo "   Installing Python $PYTHON_VERSION (This may take a while)..."
   if pyenv install "$PYTHON_VERSION"; then
     echo "   Python $PYTHON_VERSION installed successfully."
   else
     echo "   Python installation failed. Check dependencies."
+    [ -n "$TMPDIR" ] && [ -d "$TMPDIR" ] && rm -rf "$TMPDIR"
     exit 1
   fi
+
+  # Clean up build scratch dir if we created one
+  [ -n "$TMPDIR" ] && [ -d "$TMPDIR" ] && rm -rf "$TMPDIR"
 fi
 echo ""
 
