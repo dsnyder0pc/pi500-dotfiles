@@ -35,7 +35,7 @@ NAV_REPO="https://github.com/christoomey/vim-tmux-navigator.git"
 APT_COMMON_DEPS=(
   git build-essential autoconf automake libtool zlib1g-dev libbz2-dev liblzma-dev libexpat1-dev libffi-dev \
   libssl-dev libncurses5-dev libncursesw5-dev libreadline-dev uuid-dev libdb-dev libgdbm-dev libsqlite3-dev \
-  vim vile vile-common vile-filters shellcheck ncal tmux mosh tk tk-dev curl \
+  vim vile vile-common vile-filters keychain shellcheck ncal tmux mosh tk tk-dev curl \
   jq yq \
   mariadb-server mariadb-client nginx uwsgi uwsgi-plugin-python3
 )

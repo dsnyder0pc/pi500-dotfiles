@@ -188,3 +188,20 @@ al_flash() {
     fi
   )
 }
+
+# --- SSH Agent Management via Keychain (Idempotent) ---
+if command -v keychain &>/dev/null; then
+  # Detect typical SSH keys if they exist
+  KEYS_TO_LOAD=()
+  [ -f "$HOME/.ssh/id_rsa" ] && KEYS_TO_LOAD+=("id_rsa")
+  [ -f "$HOME/.ssh/id_ed25519" ] && KEYS_TO_LOAD+=("id_ed25519")
+
+  if [ ${#KEYS_TO_LOAD[@]} -gt 0 ]; then
+    # Load detected keys and export agent variables
+    eval "$(keychain --eval --agents ssh "${KEYS_TO_LOAD[@]}")"
+  else
+    # Start agent anyway even if no keys are found yet
+    eval "$(keychain --eval --agents ssh)"
+  fi
+fi
+
