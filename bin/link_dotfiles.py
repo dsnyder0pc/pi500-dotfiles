@@ -14,12 +14,14 @@ FILES_TO_LINK = {
     "bashrc": Path.home() / ".bashrc",
     "bash_aliases": Path.home() / ".bash_aliases",
     "config/labwc/rc.xml": Path.home() / ".config" / "labwc" / "rc.xml",
+    "gemini/antigravity-cli/settings.json": Path.home() / ".gemini" / "antigravity-cli" / "settings.json",
     "gitconfig": Path.home() / ".gitconfig",
     "pylintrc": Path.home() / ".pylintrc",
     "tmux.conf": Path.home() / ".tmux.conf",
     "vilerc": Path.home() / ".vilerc",
     "vimrc": Path.home() / ".vimrc",
 }
+
 
 # --- Script Logic ---
 def link_dotfiles():

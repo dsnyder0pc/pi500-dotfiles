@@ -1,3 +1,2 @@
-[user]
-	email = dsnyder0cnn@gmail.com
-	name = dsnyder0pc
+[include]
+	path = ~/.gitconfig.local

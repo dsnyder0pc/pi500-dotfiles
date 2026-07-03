@@ -1,0 +1,31 @@
+{
+  "model": "Gemini 3.5 Flash (Medium)",
+  "permissions": {
+    "allow": [
+      "command(ls)",
+      "command(mariadb)",
+      "command(.venv/bin/django-admin)",
+      "command(.venv/bin/pylint)",
+      "command(git branch)",
+      "command(git status)",
+      "command(git add)",
+      "command(git commit)",
+      "command(git diff)",
+      "command(shellcheck)",
+      "command(pylint)",
+      "command(ln)",
+      "command(cat)",
+      "command(head)",
+      "command(grep)",
+      "command(echo)",
+      "command(wc)",
+      "command(git log)",
+      "command(git show)",
+      "command(python3 scripts/sync_translations\\.py --verify)",
+      "command(python3 scripts/sync_translations\\.py)",
+      "command(bash -n scripts/diretta-host-checks\\.sh)",
+      "command(which)"
+    ]
+  },
+  "trustedWorkspaces": []
+}
