@@ -162,8 +162,9 @@ else
     echo "   Physical RAM is ${TOTAL_MEM}MB. Limiting compilation to 1 core and using local scratch temp directory to prevent lockups."
     export MAKE_OPTS="-j1"
     export MAKEFLAGS="-j1"
-    mkdir -p "$HOME/pyenv_build_scratch"
-    export TMPDIR="$HOME/pyenv_build_scratch"
+    LOCAL_SCRATCH="$HOME/pyenv_build_scratch"
+    mkdir -p "$LOCAL_SCRATCH"
+    export TMPDIR="$LOCAL_SCRATCH"
   else
     echo "   Physical RAM is ${TOTAL_MEM}MB. Proceeding with parallel build."
   fi
@@ -173,12 +174,12 @@ else
     echo "   Python $PYTHON_VERSION installed successfully."
   else
     echo "   Python installation failed. Check dependencies."
-    [ -n "$TMPDIR" ] && [ -d "$TMPDIR" ] && rm -rf "$TMPDIR"
+    [ -n "$LOCAL_SCRATCH" ] && [ -d "$LOCAL_SCRATCH" ] && rm -rf "$LOCAL_SCRATCH"
     exit 1
   fi
 
   # Clean up build scratch dir if we created one
-  [ -n "$TMPDIR" ] && [ -d "$TMPDIR" ] && rm -rf "$TMPDIR"
+  [ -n "$LOCAL_SCRATCH" ] && [ -d "$LOCAL_SCRATCH" ] && rm -rf "$LOCAL_SCRATCH"
 fi
 echo ""
 
