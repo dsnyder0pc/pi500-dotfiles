@@ -41,18 +41,30 @@ sudo apt update
 LATEST_KODI_BIN=$(apt-cache search kodi | awk '/^kodi[0-9][0-9]*-bin/ {print $1}' | sort -rV | head -n 1)
 
 if [ -z "$LATEST_KODI_BIN" ]; then
-    echo "ERROR: Could not find any dynamic kodiXX-bin package. Aborting installation."
-    exit 1
+    # Fallback to standard kodi package if available
+    if apt-cache show kodi &>/dev/null; then
+        echo "No dynamic kodiXX-bin package found. Falling back to standard 'kodi' package."
+        KODI_PACKAGE="kodi"
+        # Get the major version number from the candidate version (e.g., 3:21.3+dfsg-1 -> 21)
+        CANDIDATE_VER=$(apt-cache policy kodi | awk '/Candidate:/ {print $2}')
+        if [[ "$CANDIDATE_VER" == *:* ]]; then
+            CANDIDATE_VER="${CANDIDATE_VER#*:}"
+        fi
+        KODI_VERSION_NUMBER="${CANDIDATE_VER%%.*}"
+    else
+        echo "ERROR: Could not find any dynamic kodiXX-bin package or standard kodi package. Aborting installation."
+        exit 1
+    fi
+else
+    # Extract the base meta-package name (e.g., kodi21 from kodi21-bin)
+    KODI_PACKAGE="${LATEST_KODI_BIN%-bin}"
+    KODI_VERSION_NUMBER="${KODI_PACKAGE//[^0-9]/}"
 fi
-
-# Extract the base meta-package name (e.g., kodi21 from kodi21-bin)
-KODI_PACKAGE="${LATEST_KODI_BIN%-bin}"
-KODI_VERSION_NUMBER="${KODI_PACKAGE//[^0-9]/}"
 
 echo "Found latest package: $KODI_PACKAGE (Version: $KODI_VERSION_NUMBER)"
 
 # a) Remove old, conflicting package (kodi, not kodi21)
-if dpkg -l | grep -q "^ii.*kodi " && ! dpkg -l | grep -q "kodi$KODI_VERSION_NUMBER-bin"; then
+if [ "$KODI_PACKAGE" != "kodi" ] && dpkg -l | grep -q "^ii.*kodi " && ! dpkg -l | grep -q "kodi$KODI_VERSION_NUMBER-bin"; then
     echo "Removing legacy 'kodi' package before installing $KODI_PACKAGE."
     sudo apt remove -y kodi
 fi
@@ -109,6 +121,9 @@ fi
 
 # --- 4. HDR Color Fix (Environment Variable) ---
 echo "[4/4] Setting HDR color fix environment variable in $ENV_FILE (Idempotent)..."
+
+# Ensure the target directory exists
+sudo mkdir -p "$(dirname "$ENV_FILE")"
 
 # Ensure the file only contains the desired color fix variable
 echo "LIBGL_DRM_OUTPUT_FORMAT=rgb" | sudo tee "$ENV_FILE" > /dev/null

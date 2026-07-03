@@ -165,3 +165,7 @@ if [ -z "$__PYENV_LOADED" ]; then
   export __PYENV_LOADED=1
 fi
 # --------------------------------------------------------
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/dsnyder/.local/bin:$PATH"
