@@ -33,13 +33,16 @@ cd ~/src/pi500-dotfiles
 
 The first script prepares your shell by adding the custom `~/bin` directory to your `PATH` and then creates symbolic links for all configuration files.
 
+By default, the script detects if the system is headless (e.g. running Raspberry Pi OS Lite or a system without a desktop compositor/server installed) and automatically skips window manager configs like `rc.xml`. You can also manually force this behavior.
+
 > **Note:** This step requires the `link_dotfiles.py` script to be executable, and relies on the default `~/.bashrc` to check for and source the `~/.bash_aliases` file.
 
 ```bash
 # Make the linking script executable
 chmod +x ~/src/pi500-dotfiles/bin/link_dotfiles.py
 
-# Run the linking script (this creates symlinks like ~/.bash_aliases)
+# Run the linking script (automatically detects headless/no-GUI)
+# To force headless mode, pass: ~/src/pi500-dotfiles/bin/link_dotfiles.py --headless
 ~/src/pi500-dotfiles/bin/link_dotfiles.py
 
 # Manually source ~/.bashrc to load the new aliases and correctly set PATH
@@ -50,9 +53,11 @@ source ~/.bashrc
 
 This step runs the main setup script. It is **idempotent**, meaning you can run it multiple times without duplication errors.
 
+By default, the script automatically detects if the system is headless (e.g., systemd's default target is not `graphical.target` or there is no Wayland/X11 window manager installed). If headless, it skips all GUI-specific dependencies (such as Wayland window tools).
+
 The script performs the following actions:
 
-  * Installs system dependencies (`build-essential`, `vim`, `tmux`, `tk-dev`, `curl`, `nginx`, `mariadb-server`, `uwsgi`, etc.).
+  * Installs system dependencies (`build-essential`, `vim`, `tmux`, `tk-dev`, `curl`, `nginx`, `mariadb-server`, `uwsgi`, etc. + Wayland/GUI tools if not headless).
   * Installs and configures **pyenv**.
   * Installs the **latest stable Python 3.x** and sets it as the global default.
   * Installs Python web stack and dev tools (`pylint`, `pytest`, `Flask`, `pymysql`, `requests`, `cryptography`, etc.).
@@ -62,7 +67,8 @@ The script performs the following actions:
 <!-- end list -->
 
 ```bash
-# Run the idempotent setup script (this will take several minutes)
+# Run the idempotent setup script (automatically detects headless/no-GUI)
+# To force headless mode, pass: bash ~/src/pi500-dotfiles/bin/setup_rpi_env.sh --headless
 bash ~/src/pi500-dotfiles/bin/setup_rpi_env.sh
 ```
 
@@ -72,11 +78,15 @@ bash ~/src/pi500-dotfiles/bin/setup_rpi_env.sh
 
 ### Shell Aliases and Clipboard (`~/.bash_aliases`)
 
-Adds the following macOS-style clipboard commands using the `wl-clipboard` utility, plus a tmux integration for `agy`:
+Adds standard clipboard commands that dynamically adapt to your environment:
 
-  * `pbcopy`: Pipes input to the system clipboard.
+  * **Wayland Session**: Uses `wl-copy`/`wl-paste` via `wl-clipboard`.
+  * **X11 Session**: Uses `xclip` if available.
+  * **Tmux Session**: Uses `tmux load-buffer` / `save-buffer`.
+  * **Headless/Terminal Session**: Falls back to copying and pasting via a local temporary file (`~/.clipboard`).
+  * `pbcopy`: Pipes input to the system/fallback clipboard.
       * Example: `echo "text to copy" | pbcopy`
-  * `pbpaste`: Prints the system clipboard content to stdout.
+  * `pbpaste`: Prints clipboard content to stdout.
       * Example: `pbpaste > file.txt`
   * `agy-pop`: Launches the Antigravity TUI inside a centered, floating `tmux` popup window.
 

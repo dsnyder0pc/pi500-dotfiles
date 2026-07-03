@@ -4,16 +4,40 @@ Symlink dot files to a clone of this repo. The location is defined
 in the "Configuration" section below.
 """
 import os
+import sys
+import shutil
+import subprocess
 from pathlib import Path
 
 # --- Configuration ---
 DOTFILES_REPO = Path.home() / "src" / "pi500-dotfiles"
 
+def is_headless():
+    # Support manual override flags
+    if "--headless" in sys.argv or "--no-gui" in sys.argv:
+        return True
+    if "--gui" in sys.argv:
+        return False
+
+    # Check if a graphical window manager or server is installed/available
+    for cmd in ["labwc", "wayfire", "Xorg"]:
+        if shutil.which(cmd) is not None:
+            return False
+
+    # Auto-detect default target
+    try:
+        target = subprocess.check_output(["systemctl", "get-default"], stderr=subprocess.DEVNULL, text=True).strip()
+        if target == "graphical.target":
+            return False
+    except Exception:
+        pass
+
+    return True
+
 # Dictionary mapping: {Repo_Path_Fragment: Destination_Path}
 FILES_TO_LINK = {
     "bashrc": Path.home() / ".bashrc",
     "bash_aliases": Path.home() / ".bash_aliases",
-    "config/labwc/rc.xml": Path.home() / ".config" / "labwc" / "rc.xml",
     "gemini/antigravity-cli/settings.json": Path.home() / ".gemini" / "antigravity-cli" / "settings.json",
     "gitconfig": Path.home() / ".gitconfig",
     "pylintrc": Path.home() / ".pylintrc",
@@ -21,6 +45,11 @@ FILES_TO_LINK = {
     "vilerc": Path.home() / ".vilerc",
     "vimrc": Path.home() / ".vimrc",
 }
+
+if is_headless():
+    print("=> Headless mode detected/specified. Skipping window manager configs.")
+else:
+    FILES_TO_LINK["config/labwc/rc.xml"] = Path.home() / ".config" / "labwc" / "rc.xml"
 
 
 # --- Script Logic ---

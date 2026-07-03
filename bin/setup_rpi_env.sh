@@ -31,15 +31,43 @@ ALE_REPO="https://github.com/dense-analysis/ale.git"
 NAV_DIR="$VIM_PACK_DIR/vim-tmux-navigator"
 NAV_REPO="https://github.com/christoomey/vim-tmux-navigator.git"
 
-# List of build dependencies and development tools
-APT_DEPS=(
+# List of build dependencies and development tools (split into common and GUI components)
+APT_COMMON_DEPS=(
   git build-essential autoconf automake libtool zlib1g-dev libbz2-dev liblzma-dev libexpat1-dev libffi-dev \
   libssl-dev libncurses5-dev libncursesw5-dev libreadline-dev uuid-dev libdb-dev libgdbm-dev libsqlite3-dev \
   vim shellcheck ncal tmux mosh tk tk-dev curl \
-  fonts-noto-color-emoji gir1.2-peas-1.0 grim slurp wl-clipboard \
   jq yq \
   mariadb-server mariadb-client nginx uwsgi uwsgi-plugin-python3
 )
+
+APT_GUI_DEPS=(
+  fonts-noto-color-emoji gir1.2-peas-1.0 grim slurp wl-clipboard
+)
+
+# --- Auto-detection of Headless / Desktop Environment ---
+# Detect if the OS has a GUI environment installed or configured by default.
+HEADLESS=true
+if command -v labwc &>/dev/null || command -v wayfire &>/dev/null || command -v Xorg &>/dev/null; then
+  HEADLESS=false
+elif command -v systemctl &>/dev/null && [ "$(systemctl get-default)" = "graphical.target" ]; then
+  HEADLESS=false
+fi
+
+# Support manual override via flags
+for arg in "$@"; do
+  case $arg in
+    --headless|--no-gui) HEADLESS=true ;;
+    --gui) HEADLESS=false ;;
+  esac
+done
+
+if [ "$HEADLESS" = true ]; then
+  APT_DEPS=("${APT_COMMON_DEPS[@]}")
+  echo "=> Running in HEADLESS / NO-GUI mode. GUI packages will be skipped."
+else
+  APT_DEPS=("${APT_COMMON_DEPS[@]}" "${APT_GUI_DEPS[@]}")
+  echo "=> Running in GUI mode."
+fi
 
 # --- Utility Functions ---
 

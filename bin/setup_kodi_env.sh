@@ -3,7 +3,27 @@
 # Script: setup_kodi_env.sh
 # Description: Configures Raspberry Pi OS (Bookworm) for optimal Kodi playback.
 # Dynamically installs the latest major Kodi version available (kodi21, kodi22, etc.).
-# ----------------------------------------------------------------------------
+# --- Auto-detection of Headless / Desktop Environment ---
+# A system is considered headless if it lacks a Wayland compositor or X server, and does not boot to a graphical target by default.
+HEADLESS=true
+if command -v labwc &>/dev/null || command -v wayfire &>/dev/null || command -v Xorg &>/dev/null; then
+    HEADLESS=false
+elif command -v systemctl &>/dev/null && [ "$(systemctl get-default)" = "graphical.target" ]; then
+    HEADLESS=false
+fi
+
+# Support manual override via flags
+for arg in "$@"; do
+  case $arg in
+    --headless|--no-gui) HEADLESS=true ;;
+    --gui) HEADLESS=false ;;
+  esac
+done
+
+if [ "$HEADLESS" = true ]; then
+    echo "ERROR: System is in headless/no-GUI mode. Skipping Kodi installation and configuration."
+    exit 0
+fi
 
 echo "--- Starting Idempotent Kodi Optimization Setup for RPi 500+ ---"
 
