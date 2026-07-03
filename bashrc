@@ -169,3 +169,22 @@ fi
 
 # Added by Antigravity CLI installer
 export PATH="/home/dsnyder/.local/bin:$PATH"
+
+if [ -x "$HOME/bin/monitor_audiolinux" ]; then
+  echo ""
+  $HOME/bin/monitor_audiolinux
+fi
+
+al_flash() {
+  lsblk -y /dev/mmcblk0 | awk '/^mmcblk/ {print $1, $4}' | (
+    read -r device size
+    if [ "29.7G" != "${size}" ]; then
+      >&2 echo "Size of $device is not 29.7G"
+      return
+    else
+      echo "- Flashing AudioLinux Image"
+      gunzip -c ~/img/audiolinux_pi4-pi5_450.img.gz |
+      sudo dd status=progress of="/dev/${device}" bs=4M
+    fi
+  )
+}

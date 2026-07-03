@@ -35,13 +35,13 @@ NAV_REPO="https://github.com/christoomey/vim-tmux-navigator.git"
 APT_COMMON_DEPS=(
   git build-essential autoconf automake libtool zlib1g-dev libbz2-dev liblzma-dev libexpat1-dev libffi-dev \
   libssl-dev libncurses5-dev libncursesw5-dev libreadline-dev uuid-dev libdb-dev libgdbm-dev libsqlite3-dev \
-  vim shellcheck ncal tmux mosh tk tk-dev curl \
+  vim vile vile-common vile-filters shellcheck ncal tmux mosh tk tk-dev curl \
   jq yq \
   mariadb-server mariadb-client nginx uwsgi uwsgi-plugin-python3
 )
 
 APT_GUI_DEPS=(
-  fonts-noto-color-emoji gir1.2-peas-1.0 grim slurp wl-clipboard
+  fonts-noto-color-emoji gir1.2-peas-1.0 grim slurp wl-clipboard xvile
 )
 
 # --- Auto-detection of Headless / Desktop Environment ---
