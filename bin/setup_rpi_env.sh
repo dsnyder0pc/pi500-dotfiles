@@ -36,7 +36,7 @@ APT_COMMON_DEPS=(
   git build-essential autoconf automake libtool zlib1g-dev libbz2-dev liblzma-dev libexpat1-dev libffi-dev \
   libssl-dev libncurses5-dev libncursesw5-dev libreadline-dev uuid-dev libdb-dev libgdbm-dev libsqlite3-dev \
   vim vile vile-common vile-filters keychain shellcheck ncal tmux mosh tk tk-dev curl \
-  jq yq gh \
+  jq yq \
   mariadb-server mariadb-client nginx uwsgi uwsgi-plugin-python3
 )
 
@@ -49,7 +49,7 @@ APT_GUI_DEPS=(
 HEADLESS=true
 if command -v labwc &>/dev/null || command -v wayfire &>/dev/null || command -v Xorg &>/dev/null; then
   HEADLESS=false
-elif command -v systemctl &>/dev/null && [ "$(systemctl get-default)" = "graphical.target" ]; then
+elif command -v systemctl &>/dev/null && [ "$(systemctl get-default 2>/dev/null)" = "graphical.target" ]; then
   HEADLESS=false
 fi
 
@@ -252,21 +252,6 @@ if [ ! -f "$HOME/.local/bin/agy" ]; then
   curl -fsSL https://antigravity.google/cli/install.sh | bash
 else
   echo "   Antigravity CLI (agy) is already installed."
-fi
-echo ""
-
-# 9b. Setup GitHub CLI Credentials (Idempotent / Interactive)
-echo "9b. Checking GitHub CLI authentication..."
-if ! gh auth status &>/dev/null; then
-  echo "    GitHub CLI is not authenticated."
-  if [ -t 0 ]; then
-    echo "    Running 'gh auth login' to authenticate..."
-    gh auth login
-  else
-    echo "    Non-interactive terminal detected. Please run 'gh auth login' manually to authenticate."
-  fi
-else
-  echo "    GitHub CLI is already authenticated."
 fi
 echo ""
 
