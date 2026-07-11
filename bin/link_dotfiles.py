@@ -20,7 +20,7 @@ def is_headless():
         return False
 
     # Check if a graphical window manager or server is installed/available
-    for cmd in ["labwc", "wayfire", "Xorg"]:
+    for cmd in ["labwc", "wayfire", "hyprland", "sway", "kwin", "gnome-shell", "Xorg"]:
         if shutil.which(cmd) is not None:
             return False
 

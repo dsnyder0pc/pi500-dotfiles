@@ -13,7 +13,7 @@ set c-shiftwidth=2
 set c-suffixes=\\.\\(\\([Cchis]\\)\\|CC\\|cpp\\|pl\\|pp\\|pm\\|plx\\|cxx\\|hxx\\|scm\\)$
 set check-modtime
 set cmode
-set directory=/usr/tmp
+set directory=/tmp
 set history
 set noautobuffer
 set nohorizscroll
