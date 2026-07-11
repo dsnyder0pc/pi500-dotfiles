@@ -198,10 +198,10 @@ if command -v keychain &>/dev/null; then
 
   if [ ${#KEYS_TO_LOAD[@]} -gt 0 ]; then
     # Load detected keys and export agent variables
-    eval "$(keychain --eval ssh "${KEYS_TO_LOAD[@]}")"
+    eval "$(keychain --eval "${KEYS_TO_LOAD[@]}")"
   else
     # Start agent anyway even if no keys are found yet
-    eval "$(keychain --eval ssh)"
+    eval "$(keychain --eval)"
   fi
 fi
 
