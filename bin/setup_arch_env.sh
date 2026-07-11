@@ -158,6 +158,44 @@ else
 fi
 echo ""
 
+# 1b. Initialize, Start and Secure System Services (Idempotent)
+echo "1b. Configuring, starting and securing system services (MariaDB, NGINX)..."
+if is_pacman_installed "mariadb"; then
+  # On Arch, we must check if the database directory is initialized before starting
+  if [ ! -d "/var/lib/mysql/mysql" ]; then
+    echo "   Initializing MariaDB data directory..."
+    sudo mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
+  else
+    echo "   MariaDB data directory is already initialized."
+  fi
+
+  echo "   Enabling and starting MariaDB service..."
+  sudo systemctl enable --now mariadb
+
+  # Wait for MariaDB to start (up to 10 seconds)
+  echo "   Waiting for MariaDB to become ready..."
+  for _ in {1..10}; do
+    if sudo mariadb -e "SELECT 1" &>/dev/null; then
+      break
+    fi
+    sleep 1
+  done
+
+  # Secure the installation (non-interactive equivalent to mariadb-secure-installation)
+  echo "   Securing MariaDB installation (removing anonymous users and test db)..."
+  sudo mariadb -e "DELETE FROM mysql.user WHERE User='';"
+  sudo mariadb -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');"
+  sudo mariadb -e "DROP DATABASE IF EXISTS test;"
+  sudo mariadb -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';"
+  sudo mariadb -e "FLUSH PRIVILEGES;"
+fi
+
+if is_pacman_installed "nginx"; then
+  echo "   Enabling and starting NGINX service..."
+  sudo systemctl enable --now nginx
+fi
+echo ""
+
 # 2. Install Pyenv (Idempotent)
 echo "2. Installing pyenv..."
 if [ ! -d "$HOME/.pyenv" ]; then
