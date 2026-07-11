@@ -123,11 +123,34 @@ done
 
 if [ ${#AUR_DEPS_NEEDED[@]} -ne 0 ]; then
   AUR_HELPER=$(get_aur_helper)
+  if [ -z "$AUR_HELPER" ]; then
+    echo "   AUR helper not found. Attempting to install 'paru'..."
+    if sudo pacman -S --needed --noconfirm paru; then
+      AUR_HELPER="paru"
+      echo "   Successfully installed paru from repositories."
+    else
+      echo "   paru not found in repositories. Building paru-bin from AUR..."
+      # Ensure git and base-devel are installed (should be, but as a safeguard)
+      sudo pacman -S --needed --noconfirm git base-devel
+
+      # Clone and compile/install paru-bin (must be run as normal user, not root)
+      TEMP_DIR=$(mktemp -d)
+      if git clone https://aur.archlinux.org/paru-bin.git "$TEMP_DIR" && \
+         (cd "$TEMP_DIR" && makepkg -si --noconfirm); then
+        AUR_HELPER="paru"
+        echo "   Successfully built and installed paru-bin."
+      else
+        echo "ERROR: Failed to install paru. Cannot install AUR packages: ${AUR_DEPS_NEEDED[*]}"
+      fi
+      rm -rf "$TEMP_DIR"
+    fi
+  fi
+
   if [ -n "$AUR_HELPER" ]; then
     echo "   Installing missing AUR packages via $AUR_HELPER: ${AUR_DEPS_NEEDED[*]}"
     $AUR_HELPER -S --needed --noconfirm "${AUR_DEPS_NEEDED[@]}"
   else
-    echo "WARNING: AUR helper (yay or paru) not found. Cannot install AUR packages: ${AUR_DEPS_NEEDED[*]}"
+    echo "WARNING: AUR helper not installed. Cannot install AUR packages: ${AUR_DEPS_NEEDED[*]}"
     echo "Please install these AUR packages manually: ${AUR_DEPS_NEEDED[*]}"
   fi
 else
@@ -159,8 +182,8 @@ if [ ! -f "$HOME/.gitconfig.local" ]; then
 
     cat << EOF > "$HOME/.gitconfig.local"
 [user]
-	name = $git_name
-	email = $git_email
+        name = $git_name
+        email = $git_email
 EOF
     echo "    ~/.gitconfig.local created successfully."
   else
