@@ -51,13 +51,16 @@ source ~/.bashrc
 
 ### 3\. Install Development Environment
 
-This step runs the main setup script. It is **idempotent**, meaning you can run it multiple times without duplication errors.
+This step runs the main setup script. It is **idempotent**, meaning you can run it multiple times without duplication errors. Choose the script corresponding to your operating system:
 
-By default, the script automatically detects if the system is headless (e.g., systemd's default target is not `graphical.target` or there is no Wayland/X11 window manager installed). If headless, it skips all GUI-specific dependencies (such as Wayland window tools).
+*   **Arch Linux / CachyOS**: Uses `setup_arch_env.sh` (utilizes `pacman` and detects/uses AUR helpers like `yay`/`paru` for AUR dependencies).
+*   **Raspberry Pi OS / Debian**: Uses `setup_rpi_env.sh` (utilizes `apt`).
 
-The script performs the following actions:
+By default, these scripts automatically detect if the system is headless (e.g., systemd's default target is not `graphical.target` or there is no Wayland/X11 window manager installed). If headless, they skip all GUI-specific dependencies (such as Wayland window tools).
 
-  * Installs system dependencies (`build-essential`, `vim`, `tmux`, `tk-dev`, `curl`, `nginx`, `mariadb-server`, `uwsgi`, etc. + Wayland/GUI tools if not headless).
+The scripts perform the following actions:
+
+  * Installs system dependencies (`base-devel`/`build-essential`, `vim`, `tmux`, `tk`, `curl`, `nginx`, `mariadb`, `uwsgi`, etc. + Wayland/GUI tools if not headless).
   * Installs and configures **pyenv**.
   * Installs the **latest stable Python 3.x** and sets it as the global default.
   * Installs Python web stack and dev tools (`pylint`, `pytest`, `Flask`, `pymysql`, `requests`, `cryptography`, etc.).
@@ -67,7 +70,11 @@ The script performs the following actions:
 <!-- end list -->
 
 ```bash
-# Run the idempotent setup script (automatically detects headless/no-GUI)
+# For Arch Linux / CachyOS:
+# To force headless mode, pass: bash ~/src/pi500-dotfiles/bin/setup_arch_env.sh --headless
+bash ~/src/pi500-dotfiles/bin/setup_arch_env.sh
+
+# For Raspberry Pi OS / Debian:
 # To force headless mode, pass: bash ~/src/pi500-dotfiles/bin/setup_rpi_env.sh --headless
 bash ~/src/pi500-dotfiles/bin/setup_rpi_env.sh
 ```
