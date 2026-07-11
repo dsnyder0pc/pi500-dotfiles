@@ -28,50 +28,78 @@ fi
 echo "--- Starting Idempotent Kodi Optimization Setup for RPi 500+ ---"
 
 # Set configuration file paths
-CONFIG_FILE="/boot/firmware/config.txt"
+CONFIG_FILE=""
+if [ -f "/boot/firmware/config.txt" ]; then
+    CONFIG_FILE="/boot/firmware/config.txt"
+elif [ -f "/boot/config.txt" ]; then
+    CONFIG_FILE="/boot/config.txt"
+fi
+
 ENV_FILE="/etc/environment.d/20kodi.conf"
 KODI_USER_GROUP="video"
 
 # --- 1. Dynamic Version Detection and Installation ---
 echo "[1/4] Detecting latest major Kodi version available..."
 
-# Find the latest kodiXX-bin package, sort numerically, and take the last one.
-# Example output: kodi21-bin
-sudo apt update
-LATEST_KODI_BIN=$(apt-cache search kodi | awk '/^kodi[0-9][0-9]*-bin/ {print $1}' | sort -rV | head -n 1)
-
-if [ -z "$LATEST_KODI_BIN" ]; then
-    # Fallback to standard kodi package if available
-    if apt-cache show kodi &>/dev/null; then
-        echo "No dynamic kodiXX-bin package found. Falling back to standard 'kodi' package."
+if command -v pacman &>/dev/null; then
+    # Arch Linux / CachyOS
+    if pacman -Si kodi &>/dev/null; then
         KODI_PACKAGE="kodi"
-        # Get the major version number from the candidate version (e.g., 3:21.3+dfsg-1 -> 21)
-        CANDIDATE_VER=$(apt-cache policy kodi | awk '/Candidate:/ {print $2}')
-        if [[ "$CANDIDATE_VER" == *:* ]]; then
-            CANDIDATE_VER="${CANDIDATE_VER#*:}"
-        fi
+        CANDIDATE_VER=$(pacman -Si kodi | awk '/^Version/ {print $3}')
+        # Extract major version number (e.g., 21.3-5 -> 21)
         KODI_VERSION_NUMBER="${CANDIDATE_VER%%.*}"
     else
-        echo "ERROR: Could not find any dynamic kodiXX-bin package or standard kodi package. Aborting installation."
+        echo "ERROR: Could not find kodi package in pacman repositories. Aborting installation."
         exit 1
     fi
+
+    echo "Found latest package: $KODI_PACKAGE (Version: $KODI_VERSION_NUMBER)"
+
+    # Install the Latest Version
+    echo "Installing latest version: $KODI_PACKAGE."
+    sudo pacman -S --needed --noconfirm "$KODI_PACKAGE"
+
+elif command -v apt-get &>/dev/null; then
+    # Debian / Raspberry Pi OS
+    sudo apt update
+    LATEST_KODI_BIN=$(apt-cache search kodi | awk '/^kodi[0-9][0-9]*-bin/ {print $1}' | sort -rV | head -n 1)
+
+    if [ -z "$LATEST_KODI_BIN" ]; then
+        # Fallback to standard kodi package if available
+        if apt-cache show kodi &>/dev/null; then
+            echo "No dynamic kodiXX-bin package found. Falling back to standard 'kodi' package."
+            KODI_PACKAGE="kodi"
+            # Get the major version number from the candidate version (e.g., 3:21.3+dfsg-1 -> 21)
+            CANDIDATE_VER=$(apt-cache policy kodi | awk '/Candidate:/ {print $2}')
+            if [[ "$CANDIDATE_VER" == *:* ]]; then
+                CANDIDATE_VER="${CANDIDATE_VER#*:}"
+            fi
+            KODI_VERSION_NUMBER="${CANDIDATE_VER%%.*}"
+        else
+            echo "ERROR: Could not find any dynamic kodiXX-bin package or standard kodi package. Aborting installation."
+            exit 1
+        fi
+    else
+        # Extract the base meta-package name (e.g., kodi21 from kodi21-bin)
+        KODI_PACKAGE="${LATEST_KODI_BIN%-bin}"
+        KODI_VERSION_NUMBER="${KODI_PACKAGE//[^0-9]/}"
+    fi
+
+    echo "Found latest package: $KODI_PACKAGE (Version: $KODI_VERSION_NUMBER)"
+
+    # a) Remove old, conflicting package (kodi, not kodi21)
+    if [ "$KODI_PACKAGE" != "kodi" ] && dpkg -l | grep -q "^ii.*kodi " && ! dpkg -l | grep -q "kodi$KODI_VERSION_NUMBER-bin"; then
+        echo "Removing legacy 'kodi' package before installing $KODI_PACKAGE."
+        sudo apt remove -y kodi
+    fi
+
+    # b) Update and Install the Latest Version
+    echo "Installing latest version: $KODI_PACKAGE."
+    sudo apt install --upgrade -y "$KODI_PACKAGE"
 else
-    # Extract the base meta-package name (e.g., kodi21 from kodi21-bin)
-    KODI_PACKAGE="${LATEST_KODI_BIN%-bin}"
-    KODI_VERSION_NUMBER="${KODI_PACKAGE//[^0-9]/}"
+    echo "ERROR: Unsupported package manager (neither pacman nor apt found). Aborting."
+    exit 1
 fi
-
-echo "Found latest package: $KODI_PACKAGE (Version: $KODI_VERSION_NUMBER)"
-
-# a) Remove old, conflicting package (kodi, not kodi21)
-if [ "$KODI_PACKAGE" != "kodi" ] && dpkg -l | grep -q "^ii.*kodi " && ! dpkg -l | grep -q "kodi$KODI_VERSION_NUMBER-bin"; then
-    echo "Removing legacy 'kodi' package before installing $KODI_PACKAGE."
-    sudo apt remove -y kodi
-fi
-
-# b) Update and Install the Latest Version
-echo "Installing latest version: $KODI_PACKAGE."
-sudo apt install --upgrade -y "$KODI_PACKAGE"
 
 # --- 2. User Permission Setup ---
 echo "[2/4] Setting user permissions for hardware access (Idempotent)..."
@@ -84,21 +112,21 @@ else
 fi
 
 
-# --- 3. Configuration File Modifications (/boot/firmware/config.txt) ---
-echo "[3/4] Modifying $CONFIG_FILE for Display and Performance (Idempotent)..."
+# --- 3. Configuration File Modifications (config.txt) ---
+if [ -n "$CONFIG_FILE" ] && [ -f "$CONFIG_FILE" ]; then
+    echo "[3/4] Modifying $CONFIG_FILE for Display and Performance (Idempotent)..."
 
-# Function to add/modify lines without duplicating or causing conflicts
-set_config() {
-    KEY="$1"
-    VALUE="$2"
-    if grep -q "^${KEY}=" "$CONFIG_FILE"; then
-        sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" "$CONFIG_FILE"
-    else
-        echo "${KEY}=${VALUE}" | sudo tee -a "$CONFIG_FILE" > /dev/null
-    fi
-}
+    # Function to add/modify lines without duplicating or causing conflicts
+    set_config() {
+        KEY="$1"
+        VALUE="$2"
+        if grep -q "^${KEY}=" "$CONFIG_FILE"; then
+            sudo sed -i "s|^${KEY}=.*|${KEY}=${VALUE}|" "$CONFIG_FILE"
+        else
+            echo "${KEY}=${VALUE}" | sudo tee -a "$CONFIG_FILE" > /dev/null
+        fi
+    }
 
-if [ -f "$CONFIG_FILE" ]; then
     # Performance: Increase Contiguous Memory Allocator (CMA) for video buffers
     if ! grep -q "cma-512" "$CONFIG_FILE"; then
         echo "Setting cma-512 for video buffer size."
@@ -116,7 +144,7 @@ if [ -f "$CONFIG_FILE" ]; then
     set_config disable_tv_dither 1
 
 else
-    echo "ERROR: Configuration file $CONFIG_FILE not found. Skipping edits."
+    echo "[3/4] No Raspberry Pi firmware config.txt file found. Skipping configuration edits."
 fi
 
 # --- 4. HDR Color Fix (Environment Variable) ---
