@@ -12,11 +12,13 @@ from pathlib import Path
 # --- Configuration ---
 DOTFILES_REPO = Path.home() / "src" / "pi500-dotfiles"
 
-def is_headless():
+def is_headless(args=None):
+    if args is None:
+        args = sys.argv
     # Support manual override flags
-    if "--headless" in sys.argv or "--no-gui" in sys.argv:
+    if "--headless" in args or "--no-gui" in args:
         return True
-    if "--gui" in sys.argv:
+    if "--gui" in args:
         return False
 
     # Check if a graphical window manager or server is installed/available
@@ -53,14 +55,21 @@ else:
 
 
 # --- Script Logic ---
-def link_dotfiles():
+def link_dotfiles(repo_repo=None, files_to_link=None):
     """Removes existing files/links and creates new symbolic links from the repository."""
+    if repo_repo is None:
+        repo_repo = DOTFILES_REPO
+    else:
+        repo_repo = Path(repo_repo)
+    if files_to_link is None:
+        files_to_link = FILES_TO_LINK
+
     print("Starting dotfiles symlink process (Python)...")
-    print(f"Source Repository: {DOTFILES_REPO}")
+    print(f"Source Repository: {repo_repo}")
     print("-----------------------------------")
 
-    for source_fragment, dest_path in FILES_TO_LINK.items():
-        source_path = DOTFILES_REPO / source_fragment
+    for source_fragment, dest_path in files_to_link.items():
+        source_path = repo_repo / source_fragment
 
         print(f"Processing {source_fragment} -> {dest_path}... ", end="")
 

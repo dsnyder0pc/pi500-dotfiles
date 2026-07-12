@@ -172,7 +172,7 @@ export PATH="/home/dsnyder/.local/bin:$PATH"
 
 if [ -x "$HOME/bin/monitor_audiolinux" ]; then
   echo ""
-  $HOME/bin/monitor_audiolinux
+  "$HOME/bin/monitor_audiolinux"
 fi
 
 al_flash() {

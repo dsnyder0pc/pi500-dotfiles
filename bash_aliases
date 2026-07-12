@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Linux version of macOS pbcopy and pbpaste (dynamic fallback for headless/Wayland/X11/WSL2 compatibility)
 if [ -n "$WAYLAND_DISPLAY" ] && command -v wl-copy &>/dev/null; then
     alias pbcopy='wl-copy'
