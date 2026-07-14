@@ -205,3 +205,74 @@ if command -v keychain &>/dev/null; then
   fi
 fi
 
+set -o vi
+
+# Helper to dynamically find the graphical session VT number (TTY)
+_get_gui_vtnr() {
+  local vtnr=""
+
+  # 1. Search loginctl for an active or online Wayland/X11 session
+  if command -v loginctl >/dev/null 2>&1; then
+    for sid in $(loginctl list-sessions --no-legend | awk '{print $1}'); do
+      local type vt
+      type=$(loginctl show-session "$sid" -p Type 2>/dev/null | cut -d= -f2)
+      if [ "$type" = "wayland" ] || [ "$type" = "x11" ]; then
+        vt=$(loginctl show-session "$sid" -p VTNr 2>/dev/null | cut -d= -f2)
+        if [ -n "$vt" ] && [ "$vt" -ne 0 ] 2>/dev/null; then
+          vtnr="$vt"
+          break
+        fi
+      fi
+    done
+  fi
+
+  # 2. Fallback: Check running display manager or display server processes
+  if [ -z "$vtnr" ] || [ "$vtnr" -eq 0 ] 2>/dev/null; then
+    vtnr=$(ps -C Xorg,Xwayland,labwc,wayfire,gdm,sddm,lightdm,kwin_wayland -o tty= 2>/dev/null | sed -n 's/[^0-9]*\([0-9]\+\).*/\1/p' | head -n 1)
+  fi
+
+  # 3. Default fallback based on OS detection if still not resolved
+  if [ -z "$vtnr" ] || [ "$vtnr" -eq 0 ] 2>/dev/null; then
+    if [ -f /etc/rpi-issue ] || grep -q -i "raspberry" /etc/os-release 2>/dev/null; then
+      vtnr=1  # Raspberry Pi OS: default compositor runs on TTY1
+    else
+      vtnr=2  # Arch/CachyOS: default display manager typically uses TTY2
+    fi
+  fi
+
+  echo "$vtnr"
+}
+
+console() {
+  sudo systemctl isolate multi-user.target
+  sudo chvt 3
+}
+
+console_default() {
+  sudo systemctl set-default multi-user.target
+}
+
+gui() {
+  sudo systemctl isolate graphical.target
+  local vtnr
+  vtnr=$(_get_gui_vtnr)
+  if [ -n "$vtnr" ] && [ "$vtnr" -ne 0 ] 2>/dev/null; then
+    sudo chvt "$vtnr"
+  else
+    sudo chvt 2
+  fi
+}
+
+gui_default() {
+  sudo systemctl set-default graphical.target
+}
+
+system_default() {
+  systemctl get-default
+}
+
+# Keep 'default' for backward compatibility
+default() {
+  system_default
+}
+
