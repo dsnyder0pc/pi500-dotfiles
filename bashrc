@@ -276,3 +276,10 @@ default() {
   system_default
 }
 
+wifi() {
+  if [ -z "$1" ]; then
+    >&2 echo "Usage: wifi on|ff"
+    return 1
+  fi
+  sudo nmcli radio wifi "$1"
+}

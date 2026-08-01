@@ -34,7 +34,7 @@ NAV_REPO="https://github.com/christoomey/vim-tmux-navigator.git"
 # List of build dependencies and development tools (split into common/GUI and Pacman/AUR)
 PACMAN_COMMON_DEPS=(
   base-devel git zlib bzip2 xz expat libffi openssl ncurses readline util-linux db gdbm sqlite
-  vim keychain shellcheck tmux mosh tk curl jq yq mariadb nginx uwsgi uwsgi-plugin-python
+  vim keychain shellcheck tmux mosh tk curl jq yq mariadb nginx uwsgi uwsgi-plugin-python bc
 )
 
 AUR_COMMON_DEPS=(
@@ -59,10 +59,12 @@ elif command -v systemctl &>/dev/null && [ "$(systemctl get-default 2>/dev/null)
 fi
 
 # Support manual override via flags
+NONINTERACTIVE=false
 for arg in "$@"; do
   case $arg in
     --headless|--no-gui) HEADLESS=true ;;
     --gui) HEADLESS=false ;;
+    -y|--non-interactive|--batch) NONINTERACTIVE=true ;;
   esac
 done
 
@@ -213,19 +215,40 @@ echo ""
 echo "3b. Checking local Git configuration..."
 if [ ! -f "$HOME/.gitconfig.local" ]; then
   echo "    ~/.gitconfig.local not found."
-  if [ -t 0 ]; then
-    echo "    Creating local Git identity (~/.gitconfig.local)..."
-    read -r -p "    Enter your Git user name: " git_name
-    read -r -p "    Enter your Git email address: " git_email
 
+  # Auto-detect existing identity from git configuration or environment variables
+  existing_name=$(git config --global user.name 2>/dev/null || git config user.name 2>/dev/null || true)
+  existing_email=$(git config --global user.email 2>/dev/null || git config user.email 2>/dev/null || true)
+  git_name="${GIT_AUTHOR_NAME:-${GIT_NAME:-$existing_name}}"
+  git_email="${GIT_AUTHOR_EMAIL:-${GIT_EMAIL:-$existing_email}}"
+
+  if [ -t 0 ] && [ "$NONINTERACTIVE" != true ]; then
+    echo "    Creating local Git identity (~/.gitconfig.local)..."
+
+    if [ -n "$git_name" ]; then
+      read -r -p "    Enter your Git user name [$git_name]: " input_name
+      git_name="${input_name:-$git_name}"
+    else
+      read -r -p "    Enter your Git user name: " git_name
+    fi
+
+    if [ -n "$git_email" ]; then
+      read -r -p "    Enter your Git email address [$git_email]: " input_email
+      git_email="${input_email:-$git_email}"
+    else
+      read -r -p "    Enter your Git email address: " git_email
+    fi
+  fi
+
+  if [ -n "$git_name" ] && [ -n "$git_email" ]; then
     cat << EOF > "$HOME/.gitconfig.local"
 [user]
-        name = $git_name
-        email = $git_email
+	name = $git_name
+	email = $git_email
 EOF
-    echo "    ~/.gitconfig.local created successfully."
+    echo "    ~/.gitconfig.local created successfully (name='$git_name', email='$git_email')."
   else
-    echo "    Non-interactive terminal detected. Skipping local Git configuration creation."
+    echo "    Skipping ~/.gitconfig.local creation (Git user name/email not specified)."
   fi
 else
   echo "    ~/.gitconfig.local is already present."
